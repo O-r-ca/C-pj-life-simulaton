@@ -1,0 +1,107 @@
+{
+  "_설명": "가짜 엔진용 더미 이야기. text/log는 문자열(모든 세계 공통)이거나 {세계키: 문자열} 객체다. 객체에 없는 세계는 default를 쓴다. restart: true 선택지는 연대기를 지우고 첫 장면으로 돌아간다.",
+  "start": "start",
+  "scenes": [
+    {
+      "id": "start",
+      "age": 19,
+      "text": "2045년, 당신은 19세. 수능이 끝났다.\n어디로 갈까?",
+      "choices": [
+        { "text": "서울의 대학에 진학한다", "next": "seoul_rent", "log": "서울의 대학에 진학했다." },
+        { "text": "지방 대학에 진학한다", "next": "local_college", "log": "고향 근처 대학에 진학했다." },
+        { "text": "바로 취업한다", "next": "early_job", "log": "대학 대신 바로 취업했다." }
+      ]
+    },
+    {
+      "id": "seoul_rent",
+      "age": 20,
+      "text": {
+        "default": "서울 원룸 월세가 생각보다 비싸다.\n생활비가 빠듯하다.",
+        "housing_support": "청년 월세 지원 덕분에\n서울 생활비 부담이 조금 덜하다."
+      },
+      "choices": [
+        {
+          "text": "아르바이트를 늘린다",
+          "next": "marriage",
+          "log": { "default": "월세를 내려고 아르바이트를 늘렸다.", "housing_support": "용돈을 벌려고 아르바이트를 했다." }
+        },
+        {
+          "text": "학업에 집중한다",
+          "next": "marriage",
+          "log": { "default": "생활비를 줄이고 학업에 집중했다.", "housing_support": "월세 지원을 받으며 학업에 집중했다." }
+        }
+      ]
+    },
+    {
+      "id": "local_college",
+      "age": 22,
+      "text": "고향 근처 대학. 생활비는 적게 들지만\n졸업 후 일자리가 걱정이다.",
+      "choices": [
+        { "text": "지역 기업 인턴을 한다", "next": "marriage", "log": "지역 기업에서 인턴을 했다." },
+        { "text": "서울로 편입을 준비한다", "next": "marriage", "log": "서울로 편입을 준비했다." }
+      ]
+    },
+    {
+      "id": "early_job",
+      "age": 19,
+      "text": "고졸 취업. 또래보다 일찍 돈을 모으기 시작했다.",
+      "choices": [
+        { "text": "악착같이 저축한다", "next": "marriage", "log": "월급의 절반을 저축했다." },
+        { "text": "야간 대학을 다닌다", "next": "marriage", "log": "일하면서 야간 대학을 다녔다." }
+      ]
+    },
+    {
+      "id": "marriage",
+      "age": 28,
+      "text": {
+        "default": "28세. 연인이 결혼 이야기를 꺼냈다.\n집값은 계속 오르고 있다.",
+        "housing_support": "28세. 연인이 결혼 이야기를 꺼냈다.\n신혼부부 주거 지원을 받을 수 있다."
+      },
+      "choices": [
+        {
+          "text": "결혼한다",
+          "next": "child",
+          "log": { "default": "대출을 크게 받아 결혼했다.", "housing_support": "신혼부부 전세 지원으로 결혼했다." }
+        },
+        {
+          "text": "조금 미룬다",
+          "next": "delayed",
+          "log": { "default": "집값이 부담돼 결혼을 미뤘다.", "housing_support": "일에 집중하려고 결혼을 미뤘다." }
+        }
+      ]
+    },
+    {
+      "id": "child",
+      "age": 31,
+      "text": "결혼 3년차. 아이를 가질지 고민이다.",
+      "choices": [
+        {
+          "text": "아이를 갖는다",
+          "next": "end",
+          "log": { "default": "첫아이가 태어났다. 대출 이자와 육아비가 겹쳤다.", "housing_support": "첫아이가 태어났다." }
+        },
+        {
+          "text": "아직은 아니다",
+          "next": "end",
+          "log": { "default": "대출을 갚느라 출산을 미뤘다.", "housing_support": "출산을 미루기로 했다." }
+        }
+      ]
+    },
+    {
+      "id": "delayed",
+      "age": 31,
+      "text": { "default": "31세, 집값 때문에 결혼을 미뤘다.", "housing_support": "31세, 결혼은 아직이다." },
+      "choices": [
+        { "text": "계속", "next": "end" }
+      ]
+    },
+    {
+      "id": "end",
+      "age": 31,
+      "text": "[가짜 엔진] 여기까지가 더미 이야기다.\n진짜 엔진이 붙으면 인생이 계속 이어진다.",
+      "choices": [
+        { "text": "처음부터 다시", "restart": true }
+      ]
+    }
+  ]
+}

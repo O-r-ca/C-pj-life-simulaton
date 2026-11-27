@@ -1,0 +1,333 @@
+{
+  "_설명": "SimEngine용 스토리. text는 문자열이거나 [{if: 조건식, text}] 목록(조건이 맞는 첫 글). {수식} 자리에 값이 들어간다. 선택지는 set/log(확정)이나 outcomes(weight 비율로 하나 뽑힘)를 쓴다. set은 동시에 적용된다. 장면 age에 도달할 때까지 시나리오의 yearly 규칙이 한 해씩 적용된다. 장면 구조(선택지 개수와 순서)는 모든 세계에서 같아야 같은 선택을 두 세계에 넣을 수 있다.",
+
+  "agent": {
+    "age": 19,
+    "income": 0,
+    "partner_income": 0,
+    "assets": 300,
+    "debt": 0,
+    "deposit": 0,
+    "house_value": 0,
+    "pension": 0,
+    "married": 0,
+    "children": 0,
+    "in_seoul": 0,
+    "own_home": 0,
+    "student": 0,
+    "job_stable": 0,
+    "skill": 0,
+    "health": 85,
+    "caring": 0
+  },
+
+  "start": "start",
+
+  "scenes": [
+    {
+      "id": "start",
+      "age": 19,
+      "text": "2045년, 당신은 19세. 수능이 끝났다.\n모아둔 돈: {assets}만원\n\n어디로 갈까?",
+      "choices": [
+        { "text": "서울의 대학에 진학한다", "next": "seoul_univ",
+          "set": { "in_seoul": 1, "student": 1, "income": 1800 }, "log": "서울의 대학에 진학했다." },
+        { "text": "지방 대학에 진학한다", "next": "local_univ",
+          "set": { "in_seoul": 0, "student": 1, "income": 1500 }, "log": "고향 근처 대학에 진학했다." },
+        { "text": "바로 취업한다", "next": "early_job",
+          "set": { "in_seoul": 0, "income": "2600 * (1 + local_wage_bonus)", "job_stable": 1 }, "log": "대학 대신 바로 취업했다. 연봉 {income}만원." }
+      ]
+    },
+
+    {
+      "id": "seoul_univ",
+      "age": 20,
+      "text": [
+        { "if": "rent_support > 0",
+          "text": "서울 원룸 월세가 1년에 {rent_seoul}만원.\n청년 월세 지원 {rent_support}만원 덕분에 조금 숨통이 트인다.\n모아둔 돈: {assets}만원" },
+        { "text": "서울 원룸 월세가 1년에 {rent_seoul}만원.\n생활비가 빠듯하다.\n모아둔 돈: {assets}만원" }
+      ],
+      "choices": [
+        { "text": "아르바이트를 늘린다", "next": "first_job",
+          "outcomes": [
+            { "weight": 0.7, "set": { "income": "income + 600" }, "log": "아르바이트를 늘려 생활비를 메웠다." },
+            { "weight": 0.3, "set": { "income": "income + 600", "skill": "skill - 1", "health": "health - 5" }, "log": "아르바이트에 치여 학점도 건강도 나빠졌다." }
+          ] },
+        { "text": "학업에 집중한다", "next": "first_job",
+          "set": { "skill": "skill + 1" }, "log": "아끼며 학업에 집중했다." }
+      ]
+    },
+
+    {
+      "id": "local_univ",
+      "age": 20,
+      "text": "고향 근처 대학. 월세는 {rent_local}만원으로 서울보다 싸지만\n졸업 후 일자리가 걱정이다.\n모아둔 돈: {assets}만원",
+      "choices": [
+        { "text": "지역 기업 인턴을 한다", "next": "first_job",
+          "set": { "skill": "skill + 1" }, "log": "지역 기업에서 인턴을 했다." },
+        { "text": "서울로 편입을 준비한다", "next": "first_job",
+          "outcomes": [
+            { "weight": 0.35, "set": { "in_seoul": 1, "income": 1800, "skill": "skill + 1" }, "log": "서울의 대학으로 편입했다." },
+            { "weight": 0.65, "log": "편입에 실패하고 고향에서 졸업했다." }
+          ] }
+      ]
+    },
+
+    {
+      "id": "early_job",
+      "age": 21,
+      "text": "고졸 취업 3년차. 또래보다 일찍 돈을 모으고 있다.\n연봉 {income}만원, 모아둔 돈: {assets}만원",
+      "choices": [
+        { "text": "자격증을 따서 몸값을 올린다", "next": "pandemic",
+          "outcomes": [
+            { "weight": 0.6, "set": { "income": "income * 1.2", "skill": "skill + 1" }, "log": "자격증을 따서 연봉이 {income}만원으로 올랐다." },
+            { "weight": 0.4, "log": "자격증 시험에 떨어졌다." }
+          ] },
+        { "text": "야간 대학을 다닌다", "next": "pandemic",
+          "set": { "skill": "skill + 1", "assets": "assets - 800", "health": "health - 3" }, "log": "일하면서 야간 대학을 다녔다." }
+      ]
+    },
+
+    {
+      "id": "first_job",
+      "age": 24,
+      "text": "24세. 졸업하고 취업 시장에 나섰다.\n모아둔 돈: {assets}만원",
+      "choices": [
+        { "text": "서울에서 일자리를 찾는다", "next": "pandemic",
+          "outcomes": [
+            { "weight": "clamp(0.35 + skill * 0.2, 0.05, 0.95)",
+              "set": { "in_seoul": 1, "student": 0, "income": 3800, "job_stable": 1 }, "log": "서울의 회사에 정규직으로 취업했다. 연봉 {income}만원." },
+            { "weight": "1 - clamp(0.35 + skill * 0.2, 0.05, 0.95)",
+              "set": { "in_seoul": 1, "student": 0, "income": 2600, "job_stable": 0 }, "log": "원하던 곳에 못 가고 서울에서 계약직으로 시작했다." }
+          ] },
+        { "text": "고향 근처에서 일자리를 찾는다", "next": "pandemic",
+          "outcomes": [
+            { "weight": "clamp(0.45 + skill * 0.2 + local_wage_bonus, 0.05, 0.95)",
+              "set": { "in_seoul": 0, "student": 0, "income": "3100 * (1 + local_wage_bonus)", "job_stable": 1 }, "log": "고향 근처 회사에 정규직으로 취업했다. 연봉 {income}만원." },
+            { "weight": "1 - clamp(0.45 + skill * 0.2 + local_wage_bonus, 0.05, 0.95)",
+              "set": { "in_seoul": 0, "student": 0, "income": "2400 * (1 + local_wage_bonus)", "job_stable": 0 }, "log": "고향 근처에서 계약직으로 시작했다." }
+          ] }
+      ]
+    },
+
+    {
+      "id": "pandemic",
+      "age": 26,
+      "text": [
+        { "if": "job_stable",
+          "text": "26세. 새로운 감염병이 유행하기 시작했다.\n회사는 재택근무로 바뀌었다. 정규직이라 당장 자리는 지킬 수 있을 것 같다." },
+        { "if": "job_protection > 0",
+          "text": "26세. 새로운 감염병이 유행하기 시작했다.\n계약직이지만 고용 유지 지원 덕분에 당장 잘리지는 않는다고 한다." },
+        { "text": "26세. 새로운 감염병이 유행하기 시작했다.\n계약직부터 정리된다는 소문이 돈다." }
+      ],
+      "choices": [
+        { "text": "버티며 일한다", "next": "career",
+          "outcomes": [
+            { "weight": "0.75 * job_stable + 0.4 * (1 - job_stable) + (0.1 * job_stable + 0.45 * (1 - job_stable)) * job_protection",
+              "log": "감염병 시기를 무사히 버텨냈다." },
+            { "weight": "(0.1 * job_stable + 0.45 * (1 - job_stable)) * (1 - job_protection)",
+              "set": { "income": "income * 0.6" }, "log": "일감이 줄어 연봉이 {income}만원으로 깎였다." },
+            { "weight": 0.15,
+              "set": { "health": "health - 12", "assets": "assets - 300" }, "log": "감염병에 걸려 한동안 크게 앓았다." }
+          ] },
+        { "text": "이 기회에 다른 길을 준비한다", "next": "career",
+          "set": { "skill": "skill + 1", "income": "income * 0.85" }, "log": "일을 줄이고 온라인으로 새 기술을 배웠다." }
+      ]
+    },
+
+    {
+      "id": "career",
+      "age": 27,
+      "text": [
+        { "if": "in_seoul",
+          "text": "27세. 서울 생활 몇 년째. 경쟁은 치열하고 월세는 그대로 비싸다.\n고향의 지역 기업에서 경력직 제안이 왔다." },
+        { "if": "local_job_survival >= 0.8",
+          "text": "27세. 고향의 산업단지가 오히려 커지고 있다.\n수도권으로 갈지, 여기서 자리를 잡을지 고민이다." },
+        { "text": "27세. 고향의 공장 하나가 문을 닫았다.\n일자리가 줄고, 친구들은 하나둘 수도권으로 떠난다." }
+      ],
+      "choices": [
+        { "text": "지금 있는 곳에 남는다", "next": "marriage",
+          "outcomes": [
+            { "weight": "in_seoul + (1 - in_seoul) * local_job_survival",
+              "set": { "income": "income * 1.05" }, "log": "지금 자리를 지켰다." },
+            { "weight": "(1 - in_seoul) * (1 - local_job_survival)",
+              "set": { "income": "income * 0.7", "job_stable": 0 }, "log": "회사가 어려워져 계약직으로 바뀌었다. 연봉 {income}만원." }
+          ] },
+        { "text": "자리를 옮긴다", "next": "marriage",
+          "outcomes": [
+            { "weight": "in_seoul",
+              "set": { "in_seoul": 0, "income": "income * (0.9 + local_wage_bonus)", "job_stable": 1 }, "log": "고향 근처 회사로 옮겼다. 월세 부담이 줄었다. 연봉 {income}만원." },
+            { "weight": "1 - in_seoul",
+              "set": { "in_seoul": 1, "income": "income * 1.15" }, "log": "수도권으로 일자리를 옮겼다. 연봉 {income}만원." }
+          ] }
+      ]
+    },
+
+    {
+      "id": "marriage",
+      "age": 29,
+      "text": [
+        { "if": "newlywed_support > 0",
+          "text": "29세. 연인이 결혼 이야기를 꺼냈다.\n신혼집 전세 보증금 {jeonse}만원, 신혼부부 지원 {newlywed_support}만원.\n모아둔 돈: {assets}만원" },
+        { "text": "29세. 연인이 결혼 이야기를 꺼냈다.\n신혼집 전세 보증금 {jeonse}만원.\n모아둔 돈: {assets}만원" }
+      ],
+      "choices": [
+        { "text": "결혼한다", "next": "family",
+          "outcomes": [
+            { "weight": "clamp(0.35 + (assets + newlywed_support) / jeonse, 0.3, 0.95)",
+              "set": {
+                "married": 1,
+                "partner_income": 3500,
+                "own_home": 1,
+                "deposit": "jeonse",
+                "assets": "max(0, assets - (jeonse - newlywed_support))",
+                "debt": "debt + max(0, jeonse - newlywed_support - max(0, assets))"
+              },
+              "log": "결혼했다. 대출 {debt}만원을 안고 신혼집을 구했다." },
+            { "weight": "1 - clamp(0.35 + (assets + newlywed_support) / jeonse, 0.3, 0.95)",
+              "log": "집값이 부담돼 결혼이 미뤄졌다." }
+          ] },
+        { "text": "조금 미룬다", "next": "family", "log": "스스로 결혼을 미뤘다." }
+      ]
+    },
+
+    {
+      "id": "family",
+      "age": 32,
+      "text": [
+        { "if": "married && childcare_support > 0",
+          "text": "32세. 결혼 3년차. 아이를 가질지 고민이다.\n공공 보육이 넉넉해 맞벌이를 이어 갈 수 있다고 한다.\n가구 소득 {income + partner_income}만원 · 대출 {debt}만원" },
+        { "if": "married",
+          "text": "32세. 결혼 3년차. 아이를 가질지 고민이다.\n아이가 생기면 한 명은 일을 줄여야 할지도 모른다.\n가구 소득 {income + partner_income}만원 · 대출 {debt}만원" },
+        { "text": "32세. 아직 혼자다. 결혼을 다시 생각해본다.\n전세 보증금 {jeonse}만원, 모아둔 돈: {assets}만원" }
+      ],
+      "choices": [
+        { "text": "가정을 꾸리는 데 집중한다", "next": "home",
+          "outcomes": [
+            { "weight": "married * clamp(0.45 + (income + partner_income) / 20000 - debt / ((income + partner_income) * 20) + childcare_support * 0.3 + child_support / 2000, 0.1, 0.9)",
+              "set": { "children": "children + 1", "partner_income": "partner_income * (0.6 + 0.4 * childcare_support)" },
+              "log": "첫아이가 태어났다." },
+            { "weight": "married * (1 - clamp(0.45 + (income + partner_income) / 20000 - debt / ((income + partner_income) * 20) + childcare_support * 0.3 + child_support / 2000, 0.1, 0.9))",
+              "log": "대출 {debt}만원과 육아 부담 때문에 출산을 미뤘다." },
+            { "weight": "(1 - married) * clamp(0.35 + (assets + newlywed_support) / jeonse, 0.3, 0.95)",
+              "set": {
+                "married": 1,
+                "partner_income": 4000,
+                "own_home": 1,
+                "deposit": "jeonse",
+                "assets": "max(0, assets - (jeonse - newlywed_support))",
+                "debt": "debt + max(0, jeonse - newlywed_support - max(0, assets))"
+              },
+              "log": "늦게 결혼했다. 대출 {debt}만원을 안고 신혼집을 구했다." },
+            { "weight": "(1 - married) * (1 - clamp(0.35 + (assets + newlywed_support) / jeonse, 0.3, 0.95))",
+              "log": "여전히 집값이 부담돼 결혼하지 못했다." }
+          ] },
+        { "text": "일과 저축에 집중한다", "next": "home",
+          "set": { "income": "income * 1.1", "health": "health - 3" }, "log": "일과 저축에 집중했다. 연봉 {income}만원." }
+      ]
+    },
+
+    {
+      "id": "home",
+      "age": 35,
+      "text": [
+        { "if": "married && first_home_support > 0",
+          "text": "35세. 전세 계약이 끝나 간다. 집주인이 보증금을 {jeonse_hike}만원 올려 달라고 한다.\n집값은 {house_price}만원. 생애 첫 집 지원 {first_home_support}만원을 받을 수 있다.\n모아둔 돈 {assets}만원 · 보증금 {deposit}만원 · 대출 {debt}만원" },
+        { "if": "married",
+          "text": "35세. 전세 계약이 끝나 간다. 집주인이 보증금을 {jeonse_hike}만원 올려 달라고 한다.\n집값은 {house_price}만원.\n모아둔 돈 {assets}만원 · 보증금 {deposit}만원 · 대출 {debt}만원" },
+        { "if": "first_home_support > 0",
+          "text": "35세. 혼자 사는 월셋집. 내 집을 가질 수 있을까.\n집값은 {house_price}만원. 생애 첫 집 지원 {first_home_support}만원을 받을 수 있다.\n모아둔 돈 {assets}만원" },
+        { "text": "35세. 혼자 사는 월셋집. 내 집을 가질 수 있을까.\n집값은 {house_price}만원.\n모아둔 돈 {assets}만원" }
+      ],
+      "_구매조건": "자기 돈(현금+보증금+지원-기존 대출)이 집값의 15% 미만이면 불가, 30% 이상이면 거의 확실. 대출액은 가구 소득의 loan_income_limit배를 넘을 수 없다.",
+      "choices": [
+        { "text": "대출을 받아 집을 산다", "next": "parents",
+          "outcomes": [
+            { "weight": "clamp((assets + deposit + first_home_support - debt) / (house_price * 0.3) * 2 - 1, 0, 0.95) * (house_price - (assets + deposit + first_home_support - debt) <= (income + partner_income) * loan_income_limit)",
+              "set": {
+                "own_home": 1,
+                "house_value": "house_price",
+                "deposit": 0,
+                "debt": "max(0, house_price - (assets + deposit + first_home_support - debt))",
+                "assets": "max(0, (assets + deposit + first_home_support - debt) - house_price)"
+              },
+              "log": "집을 샀다. 대출이 {debt}만원이 됐다." },
+            { "weight": "1 - clamp((assets + deposit + first_home_support - debt) / (house_price * 0.3) * 2 - 1, 0, 0.95) * (house_price - (assets + deposit + first_home_support - debt) <= (income + partner_income) * loan_income_limit)",
+              "set": { "assets": "assets - married * jeonse_hike", "deposit": "deposit + married * jeonse_hike" },
+              "log": "대출 한도가 모자라 집을 사지 못했다." }
+          ] },
+        { "text": "지금처럼 산다", "next": "parents",
+          "set": { "assets": "assets - married * jeonse_hike", "deposit": "deposit + married * jeonse_hike" },
+          "log": "집을 사는 대신 지금 생활을 이어 갔다." }
+      ]
+    },
+
+    {
+      "id": "parents",
+      "age": 38,
+      "text": [
+        { "if": "care_support > 0",
+          "text": "38세. 고향의 부모님이 편찮으시다는 연락을 받았다.\n간병비는 해마다 {parent_care_cost}만원 정도지만, 공공 돌봄이 대부분을 나눠 진다." },
+        { "text": "38세. 고향의 부모님이 편찮으시다는 연락을 받았다.\n간병과 병원비로 해마다 {parent_care_cost}만원 정도가 든다고 한다." }
+      ],
+      "choices": [
+        { "text": "내가 곁에서 돌본다", "next": "crisis",
+          "outcomes": [
+            { "weight": "1 - in_seoul",
+              "set": { "caring": 1, "health": "health - 5 * (1 - care_support)" }, "log": "가까이 사는 덕에 부모님을 직접 돌볼 수 있었다." },
+            { "weight": "in_seoul",
+              "set": { "caring": 1, "health": "health - 8 * (1 - care_support)", "income": "income * (0.85 + 0.15 * care_support)" }, "log": "서울과 고향을 오가며 부모님을 돌봤다. 일을 줄여야 했다." }
+          ] },
+        { "text": "요양 시설에 모신다", "next": "crisis",
+          "set": { "caring": 0.6, "assets": "assets - 1500 * (1 - care_support)" }, "log": "부모님을 요양 시설에 모셨다. 비용은 형제들과 나눴다." }
+      ]
+    },
+
+    {
+      "id": "crisis",
+      "age": 43,
+      "text": [
+        { "if": "health < 60",
+          "text": "43세. 몸이 예전 같지 않다. 건강검진에서 재검 통보를 받았다.\n회사에는 구조조정 바람이 분다." },
+        { "text": "43세. 회사에 구조조정 바람이 분다.\n같이 입사한 동기 몇 명이 회사를 떠났다." }
+      ],
+      "choices": [
+        { "text": "회사에 남는다", "next": "retire_prep",
+          "outcomes": [
+            { "weight": "clamp(0.45 + skill * 0.15 + job_stable * 0.2 + job_protection * 0.3, 0.1, 0.95)",
+              "log": "구조조정을 피해 자리를 지켰다." },
+            { "weight": "1 - clamp(0.45 + skill * 0.15 + job_stable * 0.2 + job_protection * 0.3, 0.1, 0.95)",
+              "set": { "income": "income * 0.6", "job_stable": 0 }, "log": "희망퇴직 대상이 돼 회사를 나왔다. 재취업한 곳의 연봉은 {income}만원." },
+            { "weight": "(health < 55) * 0.4",
+              "set": { "health": "health - 10", "assets": "assets - 1500" }, "log": "과로로 쓰러져 병원 신세를 졌다." }
+          ] },
+        { "text": "건강부터 챙긴다", "next": "retire_prep",
+          "set": { "health": "min(100, health + 15)", "income": "income * 0.9" }, "log": "일을 줄이고 건강을 챙겼다." }
+      ]
+    },
+
+    {
+      "id": "retire_prep",
+      "age": 46,
+      "text": "46세. 노후가 남의 일이 아니게 됐다.\n연금만으로는 부족하다는 기사가 매일 나온다.\n모아둔 돈 {assets}만원 · 대출 {debt}만원 · 연금 적립 {pension}만원",
+      "choices": [
+        { "text": "연금 저축을 늘린다", "next": "end",
+          "set": { "pension": "pension + max(0, min(3000, assets))", "assets": "assets - max(0, min(3000, assets))" },
+          "log": "모아둔 돈으로 연금 저축을 늘렸다. 연금 적립 {pension}만원." },
+        { "text": "대출부터 갚는다", "next": "end",
+          "set": { "debt": "max(0, debt - max(0, assets * 0.5))", "assets": "assets - min(debt, max(0, assets * 0.5))" },
+          "log": "모아둔 돈으로 대출을 갚았다. 남은 대출 {debt}만원." },
+        { "text": "지금을 즐긴다", "next": "end",
+          "set": { "assets": "assets - 1500", "health": "min(100, health + 5)" }, "log": "가족과 여행을 다니며 지금을 즐겼다." }
+      ]
+    },
+
+    {
+      "id": "end",
+      "age": 50,
+      "text": "50세. 지금까지의 삶.\n모아둔 돈 {assets}만원 · 집 {house_value}만원 · 보증금 {deposit}만원 · 대출 {debt}만원\n연금 적립 {pension}만원 · 아이 {children}명 · 건강 {health}\n\n이야기는 여기까지다.",
+      "choices": [
+        { "text": "처음부터 다시", "restart": true }
+      ]
+    }
+  ]
+}

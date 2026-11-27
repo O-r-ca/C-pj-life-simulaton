@@ -1,0 +1,13 @@
+# 줄바꿈을 저장소 안에서는 LF로 통일 (Windows/맥 팀원 섞여도 diff가 깨지지 않게)
+* text=auto eol=lf
+
+# Windows 전용 스크립트는 CRLF 유지
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 바이너리
+*.png binary
+*.jpg binary
+*.ttf binary
+*.ttc binary

@@ -1,0 +1,94 @@
+{
+  "_설명": "세계(시나리오) 설정. 금액 단위는 만원(연간). 수치는 엔진·화면 테스트용 임시값이며 실제 통계가 아니다 (나중에 KOSIS 등으로 교체). 세계끼리는 params만 다르고 규칙(yearly)은 같다. 세계는 순서대로 화면 목록에 나온다.",
+
+  "defaults": {
+    "living_cost": 1400,
+    "student_discount": 500,
+    "couple_cost": 900,
+    "interest_rate": 0.04,
+    "overdraft_rate": 0.06,
+    "repay_rate": 0.035,
+    "wage_growth": 0.045,
+    "pension_rate": 0.09,
+    "rent_seoul": 1100,
+    "rent_local": 600,
+    "jeonse": 35000,
+    "jeonse_hike": 4000,
+    "house_price": 60000,
+    "house_growth": 0.02,
+    "loan_income_limit": 8,
+    "child_cost": 1200,
+    "child_support": 0,
+    "childcare_support": 0,
+    "parent_care_cost": 1200,
+    "care_support": 0,
+    "local_job_survival": 0.6,
+    "local_wage_bonus": 0,
+    "job_protection": 0,
+    "rent_support": 0,
+    "newlywed_support": 0,
+    "first_home_support": 0
+  },
+
+  "_yearly설명": "매년 한 번, 모두 옛 값으로 계산한 뒤 동시에 대입한다. 대출은 해마다 이자(interest_rate)와 원금(repay_rate)을 낸다. 현금이 마이너스면 overdraft_rate 이자가 붙는다. 연금은 24세부터 쌓인다.",
+  "yearly": {
+    "assets": "assets + income + partner_income - (living_cost - student * student_discount) - married * couple_cost - income * pension_rate * (age >= 24) - children * max(0, child_cost - child_support) - caring * parent_care_cost * (1 - care_support) - (1 - own_home) * (in_seoul * rent_seoul + (1 - in_seoul) * rent_local - rent_support * (age < 35)) - debt * (interest_rate + repay_rate) + min(0, assets) * overdraft_rate",
+    "debt": "debt * (1 - repay_rate)",
+    "pension": "pension + income * pension_rate * (age >= 24)",
+    "house_value": "house_value * (1 + house_growth)",
+    "health": "max(0, health - 0.4 * (age >= 30) - 0.6 * caring * (1 - care_support))",
+    "income": "income * (1 + wage_growth)",
+    "partner_income": "partner_income * (1 + wage_growth)"
+  },
+
+  "worlds": [
+    {
+      "key": "baseline",
+      "name": "기본",
+      "desc": "지금의 제도가 크게 바뀌지 않고 이어지는 세계. 다른 세계와 비교하는 기준점이다.",
+      "params": {}
+    },
+    {
+      "key": "housing_support",
+      "name": "주거 지원",
+      "desc": "청년 월세 지원, 신혼부부 전세 지원, 생애 첫 집 구입 지원이 있는 세계.",
+      "params": { "rent_support": 500, "newlywed_support": 10000, "first_home_support": 7000 }
+    },
+    {
+      "key": "family_support",
+      "name": "출산·육아 지원",
+      "desc": "아이 한 명당 양육비 지원이 크고, 공공 보육이 넉넉해 경력 단절이 적은 세계.",
+      "params": { "child_support": 700, "childcare_support": 0.8 }
+    },
+    {
+      "key": "regional",
+      "name": "지방 균형 발전",
+      "desc": "지방에 좋은 일자리가 남아 있고, 지역 기업의 임금이 수도권과 비슷한 세계.",
+      "params": { "local_job_survival": 0.9, "local_wage_bonus": 0.2 }
+    },
+    {
+      "key": "job_security",
+      "name": "고용 안정",
+      "desc": "계약직 보호가 강해 위기 때 일자리를 잃을 위험이 작은 세계.",
+      "params": { "job_protection": 0.7 }
+    },
+    {
+      "key": "care_state",
+      "name": "돌봄 국가 책임",
+      "desc": "부모 간병 비용과 부담의 대부분을 공공이 나눠 지는 세계.",
+      "params": { "care_support": 0.7 }
+    },
+    {
+      "key": "housing_boom",
+      "name": "집값 급등",
+      "desc": "집값과 전셋값, 서울 월세가 빠르게 오르는 세계.",
+      "params": { "house_price": 100000, "jeonse": 55000, "jeonse_hike": 8000, "rent_seoul": 1500, "house_growth": 0.05 }
+    },
+    {
+      "key": "pension_reform",
+      "name": "연금 보험료 인상",
+      "desc": "연금 보험료율이 높아져, 지금 쓸 돈은 줄고 노후 연금은 커지는 세계.",
+      "params": { "pension_rate": 0.13 }
+    }
+  ]
+}
